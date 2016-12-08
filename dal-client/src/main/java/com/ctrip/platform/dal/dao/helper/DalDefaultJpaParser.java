@@ -14,16 +14,16 @@ import com.ctrip.platform.dal.dao.DalRowMapper;
  * 	1.The entity must contain non-parameters constructor.
  *  2.Each field of the entity must declare the SqlType annotation.
  */
-public class DalDefaultJpaParser<T> extends AbstractDalParser<T> {
+public class DalDefaultJpaParser<T> extends AbstractDalParser<T> implements SupportPartialResultMapping<T> {
 	
 	private Map<String, Field> fieldsMap;
 	private Class<T> clazz;
 	private Field identity;
 	private boolean autoIncrement;
-	private DalRowMapper<T> rowMapper;
+	private DalDefaultJpaMapper<T> rowMapper;
 	
 	public DalDefaultJpaParser(Class<T> clazz) throws SQLException {
-		EntityManager<T> manager = new EntityManager<T>(clazz);
+		EntityManager manager = EntityManager.getEntityManager(clazz);
 		this.dataBaseName = manager.getDatabaseName();
 		this.tableName = manager.getTableName();
 		this.columns = manager.getColumnNames();
@@ -36,6 +36,9 @@ public class DalDefaultJpaParser<T> extends AbstractDalParser<T> {
 		this.identity = identities != null && identities.length == 1 ? identities[0] : null;
 		this.rowMapper = new DalDefaultJpaMapper<T>(clazz);
 		this.sensitiveColumnNames = manager.getSensitiveColumnNames();
+		this.versionColumn = manager.getVersionColumn();
+		this.updatableColumnNames = manager.getUpdatableColumnNames();
+		this.insertableColumnNames = manager.getInsertableColumnNames();
 	}
 	
 	/**
@@ -96,10 +99,6 @@ public class DalDefaultJpaParser<T> extends AbstractDalParser<T> {
 		return getFields(getColumnNames(), pojo);
 	}
 	
-	public String[] getSensitiveColumnNames() {
-		return this.sensitiveColumnNames;
-	}
-	
 	private Map<String, ?> getFields(String[] columnNames, T pojo) {
 		Map<String, Object> map = new LinkedHashMap<String, Object>();
 		for (String columnName: columnNames) {
@@ -110,5 +109,11 @@ public class DalDefaultJpaParser<T> extends AbstractDalParser<T> {
 			}
 		}
 		return map;
+	}
+
+	@Override
+	public DalRowMapper<T> mapWith(String[] selectedColumns)
+			throws SQLException {
+		return rowMapper.mapWith(selectedColumns);
 	}
 }

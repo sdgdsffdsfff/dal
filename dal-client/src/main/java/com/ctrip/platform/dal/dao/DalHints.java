@@ -88,8 +88,9 @@ public class DalHints {
 		return (DalHA)hints.get(DalHintEnum.heighAvaliable);
 	}
 	
-	public void setHA(DalHA ha){
+	public DalHints setHA(DalHA ha){
 		hints.put(DalHintEnum.heighAvaliable, ha);
+		return this;
 	}
 	
 	public Integer getInt(DalHintEnum hint, int defaultValue) {
@@ -135,6 +136,11 @@ public class DalHints {
 		hints.put(hint, value);
 		return this;
 	}
+	
+	public DalHints inDatabase(String databaseName) {
+		hints.put(DalHintEnum.designatedDatabase, databaseName);
+		return this;
+	}	
 
 	public DalHints inShard(String shardId) {
 		hints.put(DalHintEnum.shard, shardId);
@@ -349,4 +355,17 @@ public class DalHints {
 	public boolean isIdentityInsertDisabled() {
 		return !is(DalHintEnum.enableIdentityInsert);
 	}
+	
+	public DalHints updateNullField() {
+		set(DalHintEnum.updateNullField);
+		return this;
+	}
+	
+	public boolean isUpdateNullField() {
+		return is(DalHintEnum.updateNullField);
+	}
+	
+	public DalHints retrieveAllResultsFromSp() {
+		return set(DalHintEnum.retrieveAllSpResults);
+	}	
 }
